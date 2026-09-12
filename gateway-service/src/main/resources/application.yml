@@ -1,0 +1,43 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  cloud:
+    gateway:
+      routes:
+        # ============================================================
+        # 路由：用户服务
+        # 所有 /api/users/** 开头的请求转发到 user-service:8081
+        # ============================================================
+        - id: user-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/users/**
+          filters:
+            - AddRequestHeader=X-Request-Source, gateway
+            - name: RequestRateLimiter
+              args:
+                key-resolver: "#{@ipKeyResolver}"
+                redis-rate-limiter.replenishRate: 10
+                redis-rate-limiter.burstCapacity: 20
+
+        # ============================================================
+        # 路由：订单服务
+        # 所有 /api/orders/** 开头的请求转发到 order-service:8082
+        # ============================================================
+        - id: order-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - AddRequestHeader=X-Request-Source, gateway
+
+      # 全局过滤器配置
+      default-filters:
+        - AddResponseHeader=X-Gateway-Version, 1.0
+
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO

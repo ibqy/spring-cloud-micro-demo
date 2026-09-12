@@ -1,0 +1,10 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: order-service
+
+# user-service 的连接地址，允许通过命令行覆盖
+user-service:
+  url: http://localhost:8081

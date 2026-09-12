@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ============================================================
+  Spring Cloud 微服务教学项目（Maven Multi-Module）
+  作者：xb  |  日期：2026-09-12
+  说明：本工程演示 Spring Cloud 微服务核心组件——网关、服务间调用、
+        负载均衡、熔断降级。通过一个"用户-订单"业务场景串联各模块。
+  模块列表：
+    1. common          —— 公共模块（DTO、API 接口）
+    2. user-service    —— 用户服务（用户 CRUD）
+    3. order-service   —— 订单服务（订单 CRUD + OpenFeign 调用用户服务）
+    4. gateway-service —— Spring Cloud Gateway 网关（路由 + 过滤器）
+  ============================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.xb</groupId>
+    <artifactId>spring-cloud-micro-demo</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <name>spring-cloud-micro-demo</name>
+    <description>Spring Cloud 微服务教学项目：Gateway + OpenFeign + 用户/订单服务（作者 xb）</description>
+
+    <modules>
+        <module>common</module>
+        <module>user-service</module>
+        <module>order-service</module>
+        <module>gateway-service</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <spring-boot.version>3.4.4</spring-boot.version>
+        <spring-cloud.version>2024.0.0</spring-cloud.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+</project>

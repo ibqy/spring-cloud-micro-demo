@@ -18,4 +18,7 @@ Thumbs.db
 
 # Env
 *.env
-.env.local
+.env.localnode_modules
+
+docs/.vitepress/cache
+docs/.vitepress/dist

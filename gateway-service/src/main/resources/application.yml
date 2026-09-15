@@ -38,6 +38,14 @@ spring:
       default-filters:
         - AddResponseHeader=X-Gateway-Version, 1.0
 
+  # ============================================================
+  # Redis 连接配置（RequestRateLimiter 限流依赖）
+  # ============================================================
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 logging:
   level:
     org.springframework.cloud.gateway: INFO

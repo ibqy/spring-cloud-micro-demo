@@ -37,6 +37,12 @@
             <artifactId>common</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- 测试支持 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

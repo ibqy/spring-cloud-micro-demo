@@ -80,6 +80,43 @@ curl http://localhost:8080/api/orders/1
 | 06 | 统一响应体 Result | `common/.../dto/Result.java` |
 | 07 | IP 限流 KeyResolver | `gateway-service/.../config/GatewayConfig.java` |
 
+## 测试覆盖
+
+本项目包含 **27 个单元测试**（JUnit 5 + AssertJ），覆盖核心业务逻辑：
+
+| 模块 | 测试类 | 测试数 | 覆盖内容 |
+|------|--------|--------|----------|
+| `common` | `ResultTest` | 9 | 统一响应体工厂方法、泛型支持、独立实例 |
+| `user-service` | `UserServiceTest` | 9 | 初始化数据、查询、创建、ID 递增、边界值 |
+| `order-service` | `OrderServiceTest` | 9 | 初始化数据、查询、创建、金额精度、大数值 |
+
+运行测试：
+
+```bash
+mvn test
+```
+
+## 实现边界
+
+**已实现：**
+- ✅ Spring Cloud Gateway 路由与过滤器
+- ✅ OpenFeign 声明式服务调用
+- ✅ 统一响应体 Result<T>
+- ✅ 内存存储（ConcurrentHashMap）
+- ✅ 27 个单元测试
+
+**未实现（生产环境需补充）：**
+- ❌ 服务注册与发现（Nacos/Eureka）
+- ❌ 配置中心（Nacos/Apollo）
+- ❌ 熔断降级（Resilience4j/Sentinel）
+- ❌ 链路追踪（Micrometer Tracing/Zipkin）
+- ❌ 持久化存储（MySQL/PostgreSQL）
+- ❌ 分布式事务（Seata）
+- ❌ 消息队列（Kafka/RocketMQ）
+- ❌ 缓存（Redis）
+- ❌ 认证授权（Spring Security + OAuth2）
+- ❌ 容器化部署（Docker + Kubernetes）
+
 ## 目录结构
 
 ```

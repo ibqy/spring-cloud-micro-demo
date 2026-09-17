@@ -83,6 +83,7 @@ curl http://localhost:8080/api/orders/1
 | 08 | **Resilience4j 熔断器** | `order-service/.../client/UserFeignClient.java` |
 | 09 | **Fallback 降级处理** | `order-service/.../fallback/UserFallbackHandler.java` |
 | 10 | **熔断器配置（滑动窗口/阈值/半开）** | `order-service/src/main/resources/application.yml` |
+| 11 | **全局异常处理** | `common/.../exception/GlobalExceptionHandler.java` |
 
 ## 高阶实战：熔断降级
 
@@ -148,11 +149,12 @@ public class UserFallbackHandler {
 
 ## 测试覆盖
 
-本项目包含 **32 个单元测试**（JUnit 5 + AssertJ + Mockito），覆盖核心业务逻辑与熔断降级：
+本项目包含 **35 个单元测试**（JUnit 5 + AssertJ + Mockito），覆盖核心业务逻辑与熔断降级：
 
 | 模块 | 测试类 | 测试数 | 覆盖内容 |
 |------|--------|--------|----------|
 | `common` | `ResultTest` | 9 | 统一响应体工厂方法、泛型支持、独立实例 |
+| `common` | `GlobalExceptionHandlerTest` | 3 | 参数异常、缺少参数、未知异常 |
 | `user-service` | `UserServiceTest` | 8 | 初始化数据、查询、创建、ID 递增、边界值 |
 | `order-service` | `OrderServiceTest` | 10 | 初始化数据、查询、创建、金额精度、大数值 |
 | `order-service` | `UserFallbackHandlerTest` | 5 | 熔断器打开降级、超时降级、网络异常降级、null data、500 code |
@@ -170,8 +172,9 @@ mvn test
 - ✅ OpenFeign 声明式服务调用
 - ✅ Resilience4j 熔断降级（@CircuitBreaker + Fallback）
 - ✅ 统一响应体 Result<T>
+- ✅ 全局异常处理 GlobalExceptionHandler（@RestControllerAdvice）
 - ✅ 内存存储（ConcurrentHashMap）
-- ✅ 32 个单元测试
+- ✅ 35 个单元测试
 
 **未实现（生产环境需补充）：**
 - ❌ 服务注册与发现（Nacos/Eureka）
@@ -195,7 +198,8 @@ spring-cloud-micro-demo/
 │       ├── dto/OrderDTO.java        # 订单 DTO
 │       ├── dto/Result.java          # 统一响应
 │       ├── api/UserApi.java         # 用户 API 接口
-│       └── api/OrderApi.java        # 订单 API 接口
+│       ├── api/OrderApi.java        # 订单 API 接口
+│       └── exception/GlobalExceptionHandler.java  # 全局异常处理
 ├── user-service/                    # 用户服务
 │   └── src/main/java/com/xb/cloud/user/
 │       ├── UserServiceApplication.java

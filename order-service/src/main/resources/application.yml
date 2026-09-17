@@ -8,3 +8,44 @@ spring:
 # user-service 的连接地址，允许通过命令行覆盖
 user-service:
   url: http://localhost:8081
+
+# Resilience4j 熔断器配置（高阶实战）
+# 教学知识点：熔断器是微服务"防雪崩"的核心组件。
+# 当依赖的服务（user-service）连续失败时，熔断器打开，快速失败而非等待超时。
+resilience4j:
+  circuitbreaker:
+    instances:
+      userService:
+        # 滑动窗口类型：COUNT_BASED 按调用次数，TIME_BASED 按时间
+        sliding-window-type: COUNT_BASED
+        # 滑动窗口大小：统计最近 10 次调用的成功率
+        sliding-window-size: 10
+        # 失败率阈值：50% 的调用失败时触发熔断
+        failure-rate-threshold: 50
+        # 最小调用次数：至少 5 次调用后才计算失败率
+        minimum-number-of-calls: 5
+        # 熔断器打开后等待时间：30 秒后进入半开状态
+        wait-duration-in-open-state: 30s
+        # 半开状态允许的最大调用数：5 次探测调用
+        permitted-number-of-calls-in-half-open-state: 5
+        # 慢调用比例阈值：超过 2 秒视为慢调用
+        slow-call-duration-threshold: 2s
+        # 慢调用比例：40% 的调用是慢调用时触发熔断
+        slow-call-rate-threshold: 40
+    # 全局配置（可选）
+    configs:
+      default:
+        register-health-indicator: true
+        automatic-transition-from-open-to-half-open-enabled: true
+
+  # 超时配置（可选，配合熔断器使用）
+  timelimiter:
+    instances:
+      userService:
+        timeout-duration: 3s
+
+# 日志级别（调试熔断器状态变化时很有用）
+logging:
+  level:
+    io.github.resilience4j: INFO
+    com.xb.cloud.order: DEBUG

@@ -20,7 +20,7 @@ const { Layout } = DefaultTheme
             </div>
             <div class="sc-feign">OpenFeign：order ──→ user · 声明式调用，接口即契约</div>
           </div>
-          <p class="sig-note">诚实边界：本项目落地了 Gateway 与 OpenFeign 两大件，负载均衡与熔断降级是文档里逐条列出的进阶方向——先把这条链路跑通，再谈更多组件。</p>
+          <p class="sig-note">诚实边界：本项目落地了 Gateway 路由与限流、OpenFeign 声明式调用、Resilience4j 熔断降级三大核心组件。服务注册发现（Nacos/Eureka）、配置中心、链路追踪等生产级组件为进阶方向。</p>
         </div>
       </section>
     </template>

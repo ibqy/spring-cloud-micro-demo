@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
  *
  * <p><b>教学知识点</b>：与 UserApi 同理，OrderApi 定义了订单服务的契约。
  * gateway 和 order-service 内部都依赖此接口保持一致性。</p>
+ *
+ * @author ibqy
  */
 public interface OrderApi {
 

@@ -18,6 +18,8 @@ import reactor.core.publisher.Mono;
  * </ul>
  *
  * <p>注意：路由也可以通过 {@code application.yml} 配置，这里是 Java DSL 方式。</p>
+ *
+ * @author ibqy
  */
 @Configuration
 public class GatewayConfig {

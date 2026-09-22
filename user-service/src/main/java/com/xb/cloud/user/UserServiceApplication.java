@@ -16,6 +16,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *   mvn -pl user-service spring-boot:run
  *   # 或指定端口：mvn -pl user-service spring-boot:run -Dspring-boot.run.arguments=--server.port=8081
  * </pre>
+ *
+ * @author ibqy
  */
 @SpringBootApplication
 public class UserServiceApplication {

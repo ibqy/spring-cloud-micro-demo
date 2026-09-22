@@ -28,12 +28,22 @@ import java.util.stream.Collectors;
  *   <li>{@link MethodArgumentNotValidException} — {@code @Valid} 校验失败</li>
  *   <li>{@link MissingServletRequestParameterException} — GET 接口缺少必填参数</li>
  * </ul>
+ *
+ * @author ibqy
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
+    /**
+     * 处理参数异常（如查询不存在的用户/订单）。
+     *
+     * <p>返回 400 状态码，让调用方知道是"请求参数有误"而非系统故障。</p>
+     *
+     * @param e 参数异常
+     * @return 包含错误信息的 400 响应
+     */
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Result<Void>> handleIllegalArgument(IllegalArgumentException e) {
         log.warn("参数异常: {}", e.getMessage());
@@ -41,6 +51,14 @@ public class GlobalExceptionHandler {
                 .body(Result.fail(e.getMessage()));
     }
 
+    /**
+     * 处理 {@code @Valid} 校验失败。
+     *
+     * <p>将所有字段的校验错误拼接成一条消息，方便前端定位问题。</p>
+     *
+     * @param e 校验异常
+     * @return 包含所有校验错误的 400 响应
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Result<Void>> handleValidation(MethodArgumentNotValidException e) {
         String errors = e.getBindingResult().getFieldErrors().stream()
@@ -51,6 +69,12 @@ public class GlobalExceptionHandler {
                 .body(Result.fail(errors));
     }
 
+    /**
+     * 处理 GET 请求缺少必填参数的情况。
+     *
+     * @param e 缺参异常
+     * @return 指出缺失参数名的 400 响应
+     */
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<Result<Void>> handleMissingParam(MissingServletRequestParameterException e) {
         log.warn("缺少参数: {}", e.getMessage());
@@ -58,8 +82,17 @@ public class GlobalExceptionHandler {
                 .body(Result.fail("缺少必填参数: " + e.getParameterName()));
     }
 
+    /**
+     * 兜底处理器：捕获所有未被上面匹配的异常。
+     *
+     * <p>生成唯一 requestId 便于排查日志，避免直接暴露异常堆栈给调用方。</p>
+     *
+     * @param e 未知异常
+     * @return 包含 requestId 的 500 响应
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result<Void>> handleUnknown(Exception e) {
+        // 生成短 requestId，方便在日志中快速定位对应的异常堆栈
         String requestId = UUID.randomUUID().toString().substring(0, 8);
         log.error("未知异常 [{}]: {}", requestId, e.getMessage(), e);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

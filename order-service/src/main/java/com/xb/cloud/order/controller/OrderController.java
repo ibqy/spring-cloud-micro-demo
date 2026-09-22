@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p><b>教学知识点</b>：创建订单时通过 {@link UserFeignClient#getUserById} 校验用户是否存在。
  * 这是微服务架构中最常见的"服务间调用"模式——订单服务依赖用户服务。</p>
+ *
+ * @author ibqy
  */
 @RestController
 public class OrderController implements OrderApi {

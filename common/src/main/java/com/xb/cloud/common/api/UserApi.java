@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
  * <p><b>教学知识点</b>：将 API 接口定义放在 common 模块中，
  * user-service 实现这些接口，order-service 通过 OpenFeign 继承这些接口。
  * 这种方式称为"契约优先"，保证客户端和服务端的接口始终一致。</p>
+ *
+ * @author ibqy
  */
 public interface UserApi {
 

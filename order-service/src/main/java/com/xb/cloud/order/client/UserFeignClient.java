@@ -25,6 +25,8 @@ import org.springframework.cloud.openfeign.FeignClient;
  *
  * <p>注意：{@code url} 属性可用于直连指定地址（如 {@code http://localhost:8081}），
  * 留空则通过服务发现（Nacos / Eureka / 静态列表）解析目标地址。</p>
+ *
+ * @author ibqy
  */
 @FeignClient(name = "user-service", url = "${user-service.url:http://localhost:8081}")
 public interface UserFeignClient extends UserApi {

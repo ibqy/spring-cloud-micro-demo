@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
  *
  * <p><b>教学知识点</b>：Controller 实现 common 模块中定义的 {@link UserApi} 接口，
  * 这样 OpenFeign 客户端可以直接通过接口继承实现类型安全的远程调用。</p>
+ *
+ * @author ibqy
  */
 @RestController
 public class UserController implements UserApi {

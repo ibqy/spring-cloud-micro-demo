@@ -16,6 +16,8 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  * <pre>
  *   mvn -pl order-service spring-boot:run -Dspring-boot.run.arguments=--server.port=8082
  * </pre>
+ *
+ * @author ibqy
  */
 @SpringBootApplication
 @EnableFeignClients

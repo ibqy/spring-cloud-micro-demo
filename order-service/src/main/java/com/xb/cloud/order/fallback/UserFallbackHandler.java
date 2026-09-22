@@ -22,6 +22,8 @@ import org.springframework.stereotype.Component;
  *   <li><b>异常</b>：user-service 返回 5xx 或网络不可达</li>
  *   <li><b>熔断器打开</b>：连续失败次数达到阈值，熔断器进入 OPEN 状态</li>
  * </ol>
+ *
+ * @author ibqy
  */
 @Component
 public class UserFallbackHandler {

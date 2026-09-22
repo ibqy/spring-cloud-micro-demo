@@ -7,6 +7,8 @@ package com.xb.cloud.user.entity;
  *
  * <p><b>教学知识点</b>：为简化教学，本示例使用 {@code ConcurrentHashMap} 做内存存储，
  * 演示微服务架构的核心交互，不引入数据库依赖。</p>
+ *
+ * @author ibqy
  */
 public class User {
 

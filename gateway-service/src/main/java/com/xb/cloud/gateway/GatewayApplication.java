@@ -16,6 +16,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * <pre>
  *   mvn -pl gateway-service spring-boot:run
  * </pre>
+ *
+ * @author ibqy
  */
 @SpringBootApplication
 public class GatewayApplication {

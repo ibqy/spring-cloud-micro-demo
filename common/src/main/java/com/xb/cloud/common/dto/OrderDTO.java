@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
  *
  * <p><b>教学知识点</b>：订单 DTO 包含用户 ID 字段用于关联用户服务。
  * 前端传 userId，order-service 通过 OpenFeign 调用 user-service 获取用户详情。</p>
+ *
+ * @author ibqy
  */
 public class OrderDTO {
 

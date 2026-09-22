@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
  *
  * <p><b>教学知识点</b>：订单实体包含 {@code userId} 关联用户，
  * 查询时通过 OpenFeign 调用 user-service 获取用户信息，演示微服务间的数据协作。</p>
+ *
+ * @author ibqy
  */
 public class Order {
 

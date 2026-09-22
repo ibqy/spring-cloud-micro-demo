@@ -7,6 +7,8 @@ package com.xb.cloud.common.dto;
  *
  * <p><b>教学知识点</b>：微服务间通过 DTO 传输数据。DTO 放置在公共模块中，
  * 确保 all 微服务使用同一份类型定义，避免序列化/反序列化不一致。</p>
+ *
+ * @author ibqy
  */
 public class UserDTO {
 

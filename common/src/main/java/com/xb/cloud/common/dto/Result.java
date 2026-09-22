@@ -9,6 +9,8 @@ package com.xb.cloud.common.dto;
  * {@code code + message + data} 是微服务间通信的常见约定。</p>
  *
  * @param <T> data 的类型
+ *
+ * @author ibqy
  */
 public class Result<T> {
 

@@ -27,9 +27,9 @@
 
 | 模块 | 技术栈 | 端口 | 核心功能 |
 |------|--------|------|----------|
-| [`common`](common) | Spring Boot 3.4.x | — | 公共 DTO、API 接口定义 |
-| [`user-service`](user-service) | Spring Boot 3.4.x | 8081 | 用户 CRUD，提供 REST API |
-| [`order-service`](order-service) | Spring Boot 3.4.x + OpenFeign + Resilience4j | 8082 | 订单 CRUD，OpenFeign 调用用户服务，熔断降级 |
+| [`common`](common) | Spring Boot 3.5.16 | — | 公共 DTO、API 接口定义 |
+| [`user-service`](user-service) | Spring Boot 3.5.16 | 8081 | 用户 CRUD，提供 REST API |
+| [`order-service`](order-service) | Spring Boot 3.5.16 + OpenFeign + Resilience4j | 8082 | 订单 CRUD，OpenFeign 调用用户服务，熔断降级 |
 | [`gateway-service`](gateway-service) | Spring Cloud Gateway | 8080 | 统一入口、路由转发、过滤器、限流 |
 
 ## 快速启动

@@ -2,6 +2,7 @@ package com.xb.cloud.order.fallback;
 
 import com.xb.cloud.common.dto.Result;
 import com.xb.cloud.common.dto.UserDTO;
+import com.xb.cloud.order.client.UserFeignClient;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,8 +20,6 @@ import static org.mockito.Mockito.mock;
 @DisplayName("UserFallbackHandler 降级处理器测试")
 class UserFallbackHandlerTest {
 
-    private final UserFallbackHandler handler = new UserFallbackHandler();
-
     @Test
     @DisplayName("熔断器打开时 - 返回'熔断器已打开'提示")
     void getUserByIdFallback_whenCircuitBreakerOpen_shouldReturnCircuitBreakerMessage() {
@@ -29,7 +28,7 @@ class UserFallbackHandlerTest {
         Throwable cause = mock(CallNotPermittedException.class);
 
         // when
-        Result<UserDTO> result = handler.getUserByIdFallback(userId, cause);
+        Result<UserDTO> result = UserFallbackHandler.getUserByIdFallback(userId, cause);
 
         // then
         assertThat(result.getCode()).isEqualTo(500);
@@ -45,7 +44,7 @@ class UserFallbackHandlerTest {
         Throwable cause = new RuntimeException("Read timed out");
 
         // when
-        Result<UserDTO> result = handler.getUserByIdFallback(userId, cause);
+        Result<UserDTO> result = UserFallbackHandler.getUserByIdFallback(userId, cause);
 
         // then
         assertThat(result.getCode()).isEqualTo(500);
@@ -61,7 +60,7 @@ class UserFallbackHandlerTest {
         Throwable cause = new RuntimeException("Connection refused");
 
         // when
-        Result<UserDTO> result = handler.getUserByIdFallback(userId, cause);
+        Result<UserDTO> result = UserFallbackHandler.getUserByIdFallback(userId, cause);
 
         // then
         assertThat(result.getCode()).isEqualTo(500);
@@ -77,7 +76,7 @@ class UserFallbackHandlerTest {
         Throwable cause = new RuntimeException("Any error");
 
         // when
-        Result<UserDTO> result = handler.getUserByIdFallback(userId, cause);
+        Result<UserDTO> result = UserFallbackHandler.getUserByIdFallback(userId, cause);
 
         // then
         assertThat(result.getData()).isNull();
@@ -91,9 +90,33 @@ class UserFallbackHandlerTest {
         Throwable cause = new RuntimeException("Error");
 
         // when
-        Result<UserDTO> result = handler.getUserByIdFallback(userId, cause);
+        Result<UserDTO> result = UserFallbackHandler.getUserByIdFallback(userId, cause);
 
         // then
         assertThat(result.getCode()).isEqualTo(500);
+    }
+
+    @Test
+    @DisplayName("接口 default 降级入口 - 可被 Feign 代理找到并正确委托")
+    void userFeignClientDefaultFallback_shouldDelegateToHandler() {
+        // given：Feign 客户端本质上就是该接口的代理，default 方法在代理类上可见
+        UserFeignClient client = new UserFeignClient() {
+            @Override
+            public Result<UserDTO> getUserById(Long id) {
+                throw new UnsupportedOperationException("本用例不发起真实调用");
+            }
+
+            @Override
+            public Result<UserDTO> createUser(UserDTO userDTO) {
+                throw new UnsupportedOperationException("本用例不发起真实调用");
+            }
+        };
+
+        // when
+        Result<UserDTO> result = client.getUserByIdFallback(7L, new RuntimeException("Connection refused"));
+
+        // then
+        assertThat(result.getCode()).isEqualTo(500);
+        assertThat(result.getMessage()).contains("已降级处理").contains("Connection refused");
     }
 }

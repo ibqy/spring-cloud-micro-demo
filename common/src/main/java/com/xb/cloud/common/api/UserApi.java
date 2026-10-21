@@ -22,7 +22,7 @@ public interface UserApi {
 
     /** 根据 ID 查询用户 */
     @GetMapping("/api/users/{id}")
-    Result<UserDTO> getUserById(@PathVariable Long id);
+    Result<UserDTO> getUserById(@PathVariable("id") Long id);
 
     /** 创建用户 */
     @PostMapping("/api/users")

@@ -6,6 +6,8 @@ import com.xb.cloud.common.dto.UserDTO;
 import com.xb.cloud.order.fallback.UserFallbackHandler;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 /**
  * 用户服务 Feign 客户端 —— 声明式远程调用 + 熔断降级
@@ -38,6 +40,23 @@ public interface UserFeignClient extends UserApi {
      * {@code fallbackMethod} 指定降级处理方法，签名必须与原方法一致。</p>
      */
     @Override
+    @GetMapping("/api/users/{id}")
     @CircuitBreaker(name = "userService", fallbackMethod = "getUserByIdFallback")
-    Result<UserDTO> getUserById(Long id);
+    Result<UserDTO> getUserById(@PathVariable("id") Long id);
+
+    /**
+     * 降级方法 —— 必须声明在接口上（default 方法）。
+     *
+     * <p>Resilience4j 运行时按目标对象查找 fallback 方法，而 Feign 客户端是一个
+     * JDK 动态代理（{@code jdk.proxy2.$ProxyXX}），代理类上只有接口方法。
+     * 如果降级方法只写在独立的 {@code @Component} 里，会抛：</p>
+     *
+     * <pre>NoSuchMethodException: ...$ProxyXX.getUserByIdFallback(Long, Throwable)</pre>
+     *
+     * <p>放在接口 default 方法上，代理类才能找到；具体处理逻辑仍委托给
+     * {@link UserFallbackHandler}，职责不混。</p>
+     */
+    default Result<UserDTO> getUserByIdFallback(Long id, Throwable cause) {
+        return UserFallbackHandler.getUserByIdFallback(id, cause);
+    }
 }

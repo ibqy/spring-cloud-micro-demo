@@ -71,7 +71,15 @@
                     <configuration>
                         <source>${java.version}</source>
                         <target>${java.version}</target>
+                        <!-- 本项目未使用 spring-boot-starter-parent，需显式开启参数名编译，
+                             否则 @PathVariable / @RequestParam 无法按参数名解析 -->
+                        <parameters>true</parameters>
                     </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>

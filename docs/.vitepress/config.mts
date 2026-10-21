@@ -25,6 +25,7 @@ export default defineConfig({
   themeConfig: {
     nav: [
       { text: '首页', link: '/' },
+      { text: '学习路径', link: 'https://ibqy.github.io/curriculum' },
       { text: 'GitHub', link: 'https://github.com/ibqy/spring-cloud-micro-demo' }
     ],
     sidebar: [
@@ -32,7 +33,10 @@ export default defineConfig({
         text: '教学文档',
         items: [
           { text: '01 · 整体架构', link: '/01-architecture' },
-          { text: '02 · 教学知识点', link: '/02-教学知识点' }
+          { text: '02 · 教学知识点', link: '/02-教学知识点' },
+          { text: '03 · 网关路由与限流', link: '/03-gateway-routing-ratelimit' },
+          { text: '04 · OpenFeign 与熔断降级', link: '/04-feign-circuitbreaker' },
+          { text: '05 · 启动与链路验证', link: '/05-run-and-verify' }
         ]
       }
     ],

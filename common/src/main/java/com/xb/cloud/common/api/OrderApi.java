@@ -21,7 +21,7 @@ public interface OrderApi {
 
     /** 根据 ID 查询订单 */
     @GetMapping("/api/orders/{id}")
-    Result<OrderDTO> getOrderById(@PathVariable Long id);
+    Result<OrderDTO> getOrderById(@PathVariable("id") Long id);
 
     /** 创建订单 */
     @PostMapping("/api/orders")

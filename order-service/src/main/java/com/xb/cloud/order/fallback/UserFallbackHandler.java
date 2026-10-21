@@ -5,7 +5,6 @@ import com.xb.cloud.common.dto.UserDTO;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 /**
  * 用户服务调用降级处理器 —— Resilience4j Fallback
@@ -23,10 +22,15 @@ import org.springframework.stereotype.Component;
  *   <li><b>熔断器打开</b>：连续失败次数达到阈值，熔断器进入 OPEN 状态</li>
  * </ol>
  *
+ * <p><b>注意</b>：这个类只负责“降级逻辑”，不能直接作为 {@code fallbackMethod} 的目标。
+ * Feign 客户端是 JDK 动态代理，Resilience4j 只在代理类上找 fallback 方法，
+ * 独立 Bean 里的方法找不到（实测抛出 {@code NoSuchMethodException}）。
+ * 因此入口是 {@link com.xb.cloud.order.client.UserFeignClient#getUserByIdFallback}，
+ * 再由它委托到本类。详见 docs/04-feign-circuitbreaker.md 的实测记录。</p>
+ *
  * @author ibqy
  */
-@Component
-public class UserFallbackHandler {
+public final class UserFallbackHandler {
 
     private static final Logger log = LoggerFactory.getLogger(UserFallbackHandler.class);
 
@@ -40,7 +44,7 @@ public class UserFallbackHandler {
      * @param cause 触发降级的异常（超时/熔断/网络异常）
      * @return 降级后的失败响应
      */
-    public Result<UserDTO> getUserByIdFallback(Long userId, Throwable cause) {
+    public static Result<UserDTO> getUserByIdFallback(Long userId, Throwable cause) {
         log.warn("[Fallback] user-service 调用失败，userId={}，原因：{}",
                 userId, cause.getMessage());
 

@@ -1,3 +1,17 @@
+<p align="center">
+  <a href="https://ibqy.github.io/spring-cloud-micro-demo/"><img src="https://img.shields.io/badge/在线课件-2F6FEB?style=flat-square" alt="在线课件"></a>
+  <img src="https://img.shields.io/badge/Java-21-2266EE?style=flat-square" alt="Java 21">
+  <img src="https://img.shields.io/badge/Spring_Boot-3.5.16-6DB33F?style=flat-square" alt="Spring Boot 3.5.16">
+  <img src="https://img.shields.io/badge/Spring_Cloud-2025.0.3-6DB33F?style=flat-square" alt="Spring Cloud 2025.0.3">
+  <img src="https://img.shields.io/github/license/ibqy/spring-cloud-micro-demo?style=flat-square" alt="License">
+  <img src="https://img.shields.io/github/stars/ibqy/spring-cloud-micro-demo?style=flat-square" alt="Stars">
+</p>
+
+> **课程位置** 阶段 1 · 架构与资金安全 — 第 2 站
+> [上一站 DDD 架构](https://ibqy.github.io/ddd-arch-demo/) → **Spring Cloud 微服务** → [下一站 Spring Boot 高阶](https://ibqy.github.io/spring-advanced-demo/) ｜ [完整学习路线](https://ibqy.github.io/curriculum)
+
+---
+
 # 🌩 Spring Cloud 微服务教学项目
 
 > 作者：xb ｜ 日期：2026-09-12
@@ -34,11 +48,11 @@
 
 ## 快速启动
 
-前置：JDK 21+、Maven 3.9+。
+前置：JDK 21+、Maven 3.6.3+。
 
 ```bash
-# 1. 编译全部模块
-mvn clean compile
+# 1. 编译并把全部模块装进本地仓库（user/order/gateway 都依赖 common）
+mvn clean install -DskipTests
 
 # 2. 启动三个终端，分别运行各服务
 # 终端 1：用户服务
@@ -81,7 +95,7 @@ curl http://localhost:8080/api/orders/1
 | 06 | 统一响应体 Result | `common/.../dto/Result.java` |
 | 07 | IP 限流 KeyResolver | `gateway-service/.../config/GatewayConfig.java` |
 | 08 | **Resilience4j 熔断器** | `order-service/.../client/UserFeignClient.java` |
-| 09 | **Fallback 降级处理** | `order-service/.../fallback/UserFallbackHandler.java` |
+| 09 | **Fallback 降级处理** | `order-service/.../client/UserFeignClient.java`（default 入口）+ `fallback/UserFallbackHandler.java`（降级逻辑） |
 | 10 | **熔断器配置（滑动窗口/阈值/半开）** | `order-service/src/main/resources/application.yml` |
 | 11 | **全局异常处理** | `common/.../exception/GlobalExceptionHandler.java` |
 
@@ -99,16 +113,16 @@ order-service 的线程会被大量占用等待响应，最终导致**雪崩效�
 ```
 CLOSED（正常） ──失败率≥50%──▶ OPEN（熔断）
       ▲                           │
-      │                     等待 10 秒
+      │                     等待 30 秒
       │                           ▼
-      └──── 成功率≥80% ── HALF_OPEN（探测）
+      └──── 探测 5 次均成功 ── HALF_OPEN（探测）
 ```
 
 | 状态 | 行为 | 触发条件 |
 |------|------|----------|
 | **CLOSED** | 正常放行请求 | 初始状态 / 探测成功 |
-| **OPEN** | 直接走 Fallback，不调用远程服务 | 失败率 ≥ 50%（滑动窗口 10 次） |
-| **HALF_OPEN** | 放行少量请求探测恢复情况 | OPEN 状态等待 10 秒后自动进入 |
+| **OPEN** | 直接走 Fallback，不调用远程服务 | 失败率 ≥ 50%（最近 10 次、至少 5 次调用） |
+| **HALF_OPEN** | 放行少量请求探测恢复情况 | OPEN 状态等待 30 秒后自动进入 |
 
 ### 核心配置解读
 
@@ -120,24 +134,28 @@ resilience4j:
         sliding-window-type: COUNT_BASED    # 基于请求次数（而非时间）的滑动窗口
         sliding-window-size: 10             # 窗口大小：最近 10 次调用
         failure-rate-threshold: 50          # 失败率 ≥ 50% 时打开熔断器
-        wait-duration-in-open-state: 10s    # OPEN 状态持续 10 秒后进入 HALF_OPEN
-        permitted-number-of-calls-in-half-open-state: 3  # 探测时放行 3 个请求
+        wait-duration-in-open-state: 30s    # OPEN 状态持续 30 秒后进入 HALF_OPEN
+        permitted-number-of-calls-in-half-open-state: 5  # 探测时放行 5 个请求
         slow-call-duration-threshold: 2s    # 响应 > 2 秒视为慢调用
-        slow-call-rate-threshold: 80        # 慢调用占比 ≥ 80% 也触发熔断
+        slow-call-rate-threshold: 40        # 慢调用占比 ≥ 40% 也触发熔断
 ```
 
 ### Fallback 降级处理
 
-`UserFallbackHandler` 是降级处理器，当熔断器打开或服务调用失败时自动触发：
+`UserFallbackHandler` 只负责降级逻辑，`fallbackMethod` 的入口必须写在 Feign 接口上（`default` 方法）——
+Feign 客户端是 JDK 动态代理，Resilience4j 只在代理类上找降级方法：
 
 ```java
-@Component
-public class UserFallbackHandler {
-    public Result<UserDTO> getUserByIdFallback(Long userId, Throwable cause) {
-        if (cause instanceof CallNotPermittedException) {
-            return Result.fail("用户服务暂时不可用（熔断器已打开）");
-        }
-        return Result.fail("用户服务调用失败，已降级处理：" + cause.getMessage());
+public interface UserFeignClient extends UserApi {
+
+    @Override
+    @GetMapping("/api/users/{id}")
+    @CircuitBreaker(name = "userService", fallbackMethod = "getUserByIdFallback")
+    Result<UserDTO> getUserById(@PathVariable("id") Long id);
+
+    // 必须是接口 default 方法，代理类才找得到
+    default Result<UserDTO> getUserByIdFallback(Long id, Throwable cause) {
+        return UserFallbackHandler.getUserByIdFallback(id, cause);
     }
 }
 ```
@@ -147,9 +165,12 @@ public class UserFallbackHandler {
 2. **超时异常**：user-service 响应过慢 → 返回降级响应
 3. **网络异常**：user-service 不可达 → 返回降级响应
 
+> **实测结论（2026-10-21）**：停掉 user-service 连续调用，前 5 次返回“已降级处理：Connection refused”，第 6 次起返回“熔断器已打开”；30s 后 `OPEN → HALF_OPEN`，再连续 5 次成功调用后 `HALF_OPEN → CLOSED`。
+> 完整日志、失败原因与两种修法见 [docs/04-feign-circuitbreaker.md](docs/04-feign-circuitbreaker.md) 的“实测记录”。
+
 ## 测试覆盖
 
-本项目包含 **35 个单元测试**（JUnit 5 + AssertJ + Mockito），覆盖核心业务逻辑与熔断降级：
+本项目包含 **36 个单元测试**（JUnit 5 + AssertJ + Mockito），覆盖核心业务逻辑与熔断降级：
 
 | 模块 | 测试类 | 测试数 | 覆盖内容 |
 |------|--------|--------|----------|
@@ -157,7 +178,7 @@ public class UserFallbackHandler {
 | `common` | `GlobalExceptionHandlerTest` | 3 | 参数异常、缺少参数、未知异常 |
 | `user-service` | `UserServiceTest` | 8 | 初始化数据、查询、创建、ID 递增、边界值 |
 | `order-service` | `OrderServiceTest` | 10 | 初始化数据、查询、创建、金额精度、大数值 |
-| `order-service` | `UserFallbackHandlerTest` | 5 | 熔断器打开降级、超时降级、网络异常降级、null data、500 code |
+| `order-service` | `UserFallbackHandlerTest` | 6 | 熔断器打开降级、超时降级、网络异常降级、null data、500 code、接口 default 入口委托 |
 
 运行测试：
 
@@ -170,11 +191,11 @@ mvn test
 **已实现：**
 - ✅ Spring Cloud Gateway 路由与过滤器
 - ✅ OpenFeign 声明式服务调用
-- ✅ Resilience4j 熔断降级（@CircuitBreaker + Fallback）
+- ✅ Resilience4j 熔断降级（@CircuitBreaker + 接口 default fallback）
 - ✅ 统一响应体 Result<T>
 - ✅ 全局异常处理 GlobalExceptionHandler（@RestControllerAdvice）
 - ✅ 内存存储（ConcurrentHashMap）
-- ✅ 35 个单元测试
+- ✅ 36 个单元测试
 
 **未实现（生产环境需补充）：**
 - ❌ 服务注册与发现（Nacos/Eureka）
@@ -211,8 +232,9 @@ spring-cloud-micro-demo/
 │       ├── OrderServiceApplication.java
 │       ├── entity/Order.java
 │       ├── service/OrderService.java
-│       ├── client/UserFeignClient.java    # @CircuitBreaker 熔断保护
-│       ├── fallback/UserFallbackHandler.java  # 降级处理
+│       ├── client/UserFeignClient.java    # @CircuitBreaker + default fallback
+│       ├── fallback/UserFallbackHandler.java  # 降级逻辑
+│       ├── config/CircuitBreakerEventLogger.java  # 状态迁移日志
 │       └── controller/OrderController.java
 ├── gateway-service/                 # 网关服务
 │   └── src/main/java/com/xb/cloud/gateway/

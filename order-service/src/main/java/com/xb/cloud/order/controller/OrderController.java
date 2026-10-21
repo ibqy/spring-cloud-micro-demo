@@ -44,7 +44,9 @@ public class OrderController implements OrderApi {
         // 调用 user-service 校验用户是否存在
         Result<UserDTO> userResult = userFeignClient.getUserById(orderDTO.getUserId());
         if (userResult.getCode() != 200) {
-            return Result.fail("用户不存在，无法创建订单");
+            // 不揉平下游语义：用户不存在、调用失败降级、熔断器打开是三种不同原因，
+            // 直接透传 message 才能在调用方看到真实原因
+            return Result.fail("创建订单失败：" + userResult.getMessage());
         }
         Order order = orderService.create(
                 orderDTO.getUserId(),
